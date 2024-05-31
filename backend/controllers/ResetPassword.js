@@ -1,48 +1,51 @@
+// Import necessary modules
 const User = require("../models/User");
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
+// Load environment variables
+require('dotenv').config();
+
+// Function to generate a random token
+const generateToken = () => {
+  return crypto.randomBytes(20).toString("hex");
+};
+
 exports.resetPasswordToken = async (req, res) => {
   try {
-    const email = req.body.email;
-    const user = await User.findOne({ email: email });
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
     if (!user) {
-      return res.json({
+      return res.status(400).json({
         success: false,
-        message: `This Email: ${email} is not Registered With Us Enter a Valid Email `,
+        message: `This email (${email}) is not registered with us. Please enter a valid email.`,
       });
     }
-    const token = crypto.randomBytes(20).toString("hex");
 
-    const updatedDetails = await User.findOneAndUpdate(
-      { email: email },
-      {
-        token: token,
-        resetPasswordExpires: Date.now() + 3600000,
-      },
-      { new: true }
-    );
-    console.log("DETAILS", updatedDetails);
+    const token = generateToken();
+    user.token = token;
+    user.resetPasswordExpires = Date.now() + parseInt(process.env.RESET_TOKEN_EXPIRATION || 3600000); // Set token expiration time from environment variable or default to 1 hour
 
-    const url = `http://localhost:3000/updatepassword/${token}`;
+    await user.save();
 
+    const resetUrl = `${process.env.RESET_URL}/${token}`;
     await mailSender(
       email,
       "Password Reset",
-      `Your Link for email verification is ${url}. Please click this url to reset your password.`
+      `Your password reset link is: ${resetUrl}. Please click this link to reset your password.`
     );
 
     res.json({
       success: true,
-      message:
-        "Email Sent Successfully, Please Check Your Email to Continue Further",
+      message: "Email sent successfully. Please check your email to continue.",
     });
   } catch (error) {
-    return res.json({
-      error: error.message,
+    console.error("Error in resetPasswordToken:", error);
+    res.status(500).json({
       success: false,
-      message: `Some Error in Sending the Reset Message`,
+      message: "An error occurred while sending the reset email.",
     });
   }
 };
@@ -51,40 +54,45 @@ exports.resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword, token } = req.body;
 
-    if (confirmPassword !== password) {
-      return res.json({
+    if (password !== confirmPassword) {
+      return res.status(400).json({
         success: false,
-        message: "Password and Confirm Password Does not Match",
+        message: "Password and confirm password do not match.",
       });
     }
-    const userDetails = await User.findOne({ token: token });
-    if (!userDetails) {
-      return res.json({
+
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.status(400).json({
         success: false,
-        message: "Token is Invalid",
+        message: "Invalid or expired token.",
       });
     }
-    if (!(userDetails.resetPasswordExpires > Date.now())) {
-      return res.status(403).json({
+
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({
         success: false,
-        message: `Token is Expired, Please Regenerate Your Token`,
+        message: "Token is expired. Please regenerate your token.",
       });
     }
+
     const encryptedPassword = await bcrypt.hash(password, 10);
-    await User.findOneAndUpdate(
-      { token: token },
-      { password: encryptedPassword },
-      { new: true }
-    );
+    user.password = encryptedPassword;
+    user.token = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
     res.json({
       success: true,
-      message: `Password Reset Successful`,
+      message: "Password reset successful.",
     });
   } catch (error) {
-    return res.json({
-      error: error.message,
+    console.error("Error in resetPassword:", error);
+    res.status(500).json({
       success: false,
-      message: `Some Error in Updating the Password`,
+      message: "An error occurred while resetting the password.",
     });
   }
 };

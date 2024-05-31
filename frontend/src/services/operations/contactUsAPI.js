@@ -4,13 +4,14 @@ import { contactusEndpoint } from "../apis";
 
 export const contactUs = async (data) => {
   const toastId = toast.loading("Loading...");
+  const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
 
   try {
     // console.log("Printing contact us data frontend => ", data);
     console.log("calling api put wali");
     const res = await apiConnector(
       "PUT",
-      "http://localhost:4000/api/v1/reach/contact",
+      `${BASE_URL}/reach/contact`,
       {
         data,
       }

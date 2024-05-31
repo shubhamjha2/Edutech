@@ -8,14 +8,11 @@ import { apiConnector } from "../../services/apiconnector";
 
 function Reviewslider() {
   const [reviews, setReviews] = useState([]);
-
+  const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
   useEffect(() => {
     const fetchAllReviews = async () => {
       try {
-        const res = await apiConnector(
-          "GET",
-          "http://localhost:4000/api/v1/course/getReviews"
-        );
+        const res = await apiConnector("GET", `${BASE_URL}/course/getReviews`);
 
         if (res?.data?.success) {
           setReviews(res?.data?.data || []);
@@ -45,7 +42,10 @@ function Reviewslider() {
         }}
       >
         {reviews.map((review, index) => (
-          <SwiperSlide key={index} className="p-6  flex flex-col items-start mb-10">
+          <SwiperSlide
+            key={index}
+            className="p-6  flex flex-col items-start mb-10"
+          >
             <img
               src={
                 review?.user?.image
@@ -64,7 +64,7 @@ function Reviewslider() {
             <p className=" text-sm flex text-left  text-richblack-300 ">
               {review?.review}
             </p>
-            
+
             {/* <ReactStars
               count={5}
               value={review.rating}
@@ -74,7 +74,6 @@ function Reviewslider() {
               emptyIcon={<FaStar />}
               fullIcon={<FaStar />}
             /> */}
-            
           </SwiperSlide>
         ))}
       </Swiper>
