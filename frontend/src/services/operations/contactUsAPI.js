@@ -4,7 +4,7 @@ import { contactusEndpoint } from "../apis";
 
 export const contactUs = async (data) => {
   const toastId = toast.loading("Loading...");
-  const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
+  const BASE_URL = process.env.BASE_URL;
 
   try {
     // console.log("Printing contact us data frontend => ", data);
