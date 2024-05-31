@@ -1,6 +1,7 @@
 
 // Now you can access the BASE_URL variable
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
+
 
 // AUTH ENDPOINTS
 export const endpoints = {
