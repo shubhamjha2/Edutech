@@ -8,7 +8,7 @@ import { apiConnector } from "../../services/apiconnector";
 
 function Reviewslider() {
   const [reviews, setReviews] = useState([]);
-  const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
+  const BASE_URL ="https://edutech-backend-shubham-jhas-projects-b31012f8.vercel.app/api/v1";
   useEffect(() => {
     const fetchAllReviews = async () => {
       try {

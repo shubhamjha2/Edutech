@@ -1,6 +1,6 @@
 
 // Now you can access the BASE_URL variable
-const BASE_URL = process.env.BASE_URL || "http://localhost:4000/api/v1";
+const BASE_URL = "https://edutech-backend-shubham-jhas-projects-b31012f8.vercel.app/api/v1";
 
 
 // AUTH ENDPOINTS
